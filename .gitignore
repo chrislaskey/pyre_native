@@ -1,0 +1,15 @@
+# Xcode User settings
+xcuserdata/
+
+# Build outputs
+build/
+DerivedData/
+*.ipa
+*.dSYM*
+
+# Swift Package Manager
+.build/
+Package.resolved
+
+# macOS system files
+.DS_Store
