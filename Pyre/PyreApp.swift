@@ -2,6 +2,8 @@ import SwiftUI
 
 @main
 struct PyreApp: App {
+    @StateObject private var router = URLRouter()
+
     init() {
         #if os(macOS)
         NotificationCenter.default.addObserver(
@@ -16,7 +18,14 @@ struct PyreApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RouterView()
+                .environmentObject(router)
+                .onOpenURL { url in
+                    RouterHelpers.handleUniversalLink(url, router: router)
+                }
         }
+        #if os(macOS)
+        .windowStyle(.hiddenTitleBar)
+        #endif
     }
 }

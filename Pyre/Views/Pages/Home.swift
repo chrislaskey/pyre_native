@@ -3,7 +3,9 @@ import SwiftUI
 import Subprocess
 #endif
 
-struct ContentView: View {
+struct Home: View {
+    @State private var paramsFromRouter: ParamsFromRouter
+
     @State private var commandInput: String = ""
     @State private var commandOutput: String = ""
     @State private var isRunning = false
@@ -11,6 +13,10 @@ struct ContentView: View {
     #if os(macOS)
     @State private var currentExecution: Execution?
     #endif
+
+    init(paramsFromRouter: ParamsFromRouter) {
+        self.paramsFromRouter = paramsFromRouter
+    }
 
     var body: some View {
         VStack(spacing: 20) {
@@ -133,5 +139,5 @@ private extension TerminationStatus {
 #endif
 
 #Preview {
-    ContentView()
+    Home(paramsFromRouter: ParamsFromRouter(url: URL(string: "/")!, path: "/", template: "/", params: [:]))
 }
