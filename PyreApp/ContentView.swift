@@ -1,9 +1,16 @@
 import SwiftUI
+#if os(macOS)
+import Subprocess
+#endif
 
 struct ContentView: View {
+    @State private var commandInput: String = ""
     @State private var commandOutput: String = ""
     @State private var isRunning = false
     @State private var hasRun = false
+    #if os(macOS)
+    @State private var currentExecution: Execution?
+    #endif
 
     var body: some View {
         VStack(spacing: 20) {
@@ -17,16 +24,32 @@ struct ContentView: View {
                 .fontWeight(.bold)
 
             #if os(macOS)
-            Button {
-                runCommand()
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "terminal")
-                    Text(isRunning ? "Running…" : "Run pwd")
+            HStack {
+                TextField("Enter a command…", text: $commandInput)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.system(.body, design: .monospaced))
+                    .onSubmit { runCommand() }
+                    .disabled(isRunning)
+
+                if isRunning {
+                    Button {
+                        stopCommand()
+                    } label: {
+                        Image(systemName: "stop.fill")
+                            .foregroundStyle(.red)
+                    }
+                    .controlSize(.large)
+                } else {
+                    Button {
+                        runCommand()
+                    } label: {
+                        Image(systemName: "play.fill")
+                    }
+                    .disabled(commandInput.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .controlSize(.large)
                 }
             }
-            .disabled(isRunning)
-            .controlSize(.large)
+            .frame(maxWidth: 480)
 
             if hasRun {
                 GroupBox {
@@ -36,7 +59,7 @@ struct ContentView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .textSelection(.enabled)
                     }
-                    .frame(maxHeight: 200)
+                    .frame(maxHeight: 300)
                 } label: {
                     Label("Output", systemImage: "text.alignleft")
                 }
@@ -52,28 +75,62 @@ struct ContentView: View {
 
     #if os(macOS)
     private func runCommand() {
+        let command = commandInput.trimmingCharacters(in: .whitespaces)
+        guard !command.isEmpty else { return }
+
         isRunning = true
         commandOutput = ""
+        hasRun = true
+        currentExecution = nil
 
         Task {
             do {
-                let result = try await ShellExecutor.run("pwd")
-                commandOutput = result.output
-                if !result.error.isEmpty {
-                    commandOutput += "\nstderr: \(result.error)"
-                }
-                if result.exitCode != 0 {
-                    commandOutput += "\nexit code: \(result.exitCode)"
+                let status = try await ShellExecutor.stream(
+                    command,
+                    onStart: { execution in
+                        await MainActor.run {
+                            currentExecution = execution
+                        }
+                    },
+                    onLine: { line in
+                        await MainActor.run {
+                            if commandOutput.isEmpty {
+                                commandOutput = line
+                            } else {
+                                commandOutput += "\n" + line
+                            }
+                        }
+                    }
+                )
+                if !status.isSuccess {
+                    let note = status.wasTerminatedBySignal ? "stopped" : "exit: \(status)"
+                    commandOutput += commandOutput.isEmpty ? note : "\n\(note)"
                 }
             } catch {
-                commandOutput = "Error: \(error.localizedDescription)"
+                commandOutput += "\nError: \(error.localizedDescription)"
             }
             isRunning = false
-            hasRun = true
+            currentExecution = nil
+        }
+    }
+
+    private func stopCommand() {
+        guard let execution = currentExecution else { return }
+        Task {
+            await ShellExecutor.stop(execution)
         }
     }
     #endif
 }
+
+#if os(macOS)
+private extension TerminationStatus {
+    var wasTerminatedBySignal: Bool {
+        if case .unhandledException = self { return true }
+        return false
+    }
+}
+#endif
 
 #Preview {
     ContentView()

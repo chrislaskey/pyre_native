@@ -112,6 +112,7 @@
 			);
 			name = PyreApp;
 			packageProductDependencies = (
+				EFB216412F6DE900001A9282 /* Subprocess */,
 			);
 			productName = PyreApp;
 			productReference = EFB216052F6DE8F6001A9282 /* PyreApp.app */;
@@ -197,6 +198,9 @@
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
 			productRefGroup = EFB216062F6DE8F6001A9282 /* Products */;
+			packageReferences = (
+				EFB216402F6DE900001A9282 /* XCRemoteSwiftPackageReference "swift-subprocess" */,
+			);
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -613,6 +617,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		EFB216402F6DE900001A9282 /* XCRemoteSwiftPackageReference "swift-subprocess" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swiftlang/swift-subprocess.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.3.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		EFB216412F6DE900001A9282 /* Subprocess */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EFB216402F6DE900001A9282 /* XCRemoteSwiftPackageReference "swift-subprocess" */;
+			productName = Subprocess;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = EFB215FD2F6DE8F6001A9282 /* Project object */;
 }
