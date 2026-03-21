@@ -11,32 +11,22 @@ import Subprocess
 class HomeViewModel: ObservableObject, PageViewModel {
     private(set) var router: URLRouter?
     private(set) var paramsFromRouter: ParamsFromRouter?
-    private(set) var channelPath: String
 
-    init() {
-        let channelPath = "/"
-
-        self.channelPath = channelPath
-    }
+    init() {}
     
     func mount(_ paramsFromRouter: ParamsFromRouter, _ router: URLRouter) {
         self.router = router
         self.paramsFromRouter = paramsFromRouter
 
-        let isOfflineMode = false
-
-        isOfflineMode ? handleParams() : connect()
-    }
-    
-    func connect() {
         handleParams()
     }
     
     func handleParams(_ payload: [String: Any] = [:]) {
+        DebugLogger.info("Loading page data")
     }
 
     func reload() {
-        DebugLogger.info("Reloading home page")
+        handleParams()
     }
 }
 
