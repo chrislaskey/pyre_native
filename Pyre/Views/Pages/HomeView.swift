@@ -36,6 +36,7 @@ class HomeViewModel: ObservableObject, PageViewModel {
     }
 
     func reload() {
+        DebugLogger.info("Reloading home page")
     }
 }
 
@@ -121,6 +122,7 @@ struct HomeView: View {
             }
             .padding(32)
         }
+        .withPageReloadable(viewModel: viewModel)
         .onAppear {
             if !handledFirstOnAppear {
                 viewModel.mount(paramsFromRouter, router)

@@ -27,5 +27,13 @@ struct PyreApp: App {
         #if os(macOS)
         .windowStyle(.hiddenTitleBar)
         #endif
+        .commands {
+            CommandGroup(after: .newItem) {
+                Button("Reload Page") {
+                    router.reconnect()
+                }
+                .keyboardShortcut("r", modifiers: .command)
+            }
+        }
     }
 }
