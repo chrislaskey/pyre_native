@@ -1,13 +1,13 @@
 //
-//  PyreAppUITests.swift
-//  PyreAppUITests
+//  PyreUITests.swift
+//  PyreUITests
 //
 //  Created by Chris Laskey on 3/20/26.
 //
 
 import XCTest
 
-final class PyreAppUITests: XCTestCase {
+final class PyreUITests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.

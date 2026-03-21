@@ -1,13 +1,13 @@
 //
-//  PyreAppUITestsLaunchTests.swift
-//  PyreAppUITests
+//  PyreUITestsLaunchTests.swift
+//  PyreUITests
 //
 //  Created by Chris Laskey on 3/20/26.
 //
 
 import XCTest
 
-final class PyreAppUITestsLaunchTests: XCTestCase {
+final class PyreUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true

@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct PyreAppApp: App {
+struct PyreApp: App {
     init() {
         #if os(macOS)
         NotificationCenter.default.addObserver(
