@@ -5,7 +5,7 @@ struct AppRoutes: AppRoutesProtocol {
         // Auth routes
 
         Route("/sign-in") { paramsFromRouter in SignInView(paramsFromRouter: paramsFromRouter) },
-        Route("/sign-out") { paramsFromRouter in HomeView(paramsFromRouter: paramsFromRouter) },
+        Route("/sign-out") { paramsFromRouter in SignOutView(paramsFromRouter: paramsFromRouter) },
 
         // App routes
 

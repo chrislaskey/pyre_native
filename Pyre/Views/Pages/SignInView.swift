@@ -32,10 +32,10 @@ class SignInViewModel: ObservableObject, PageViewModel {
 #if os(macOS)
 struct SignInWebView: NSViewRepresentable {
     let url: URL
-    var onTokenFound: ((String) -> Void)?
+    var onSignInComplete: ((_ accessCookie: String?, _ refreshCookie: String?) -> Void)?
 
     func makeCoordinator() -> SignInWebViewCoordinator {
-        SignInWebViewCoordinator(remoteURL: url, onTokenFound: onTokenFound)
+        SignInWebViewCoordinator(remoteURL: url, onSignInComplete: onSignInComplete)
     }
 
     func makeNSView(context: Context) -> WKWebView {
@@ -50,10 +50,10 @@ struct SignInWebView: NSViewRepresentable {
 #else
 struct SignInWebView: UIViewRepresentable {
     let url: URL
-    var onTokenFound: ((String) -> Void)?
+    var onSignInComplete: ((_ accessCookie: String?, _ refreshCookie: String?) -> Void)?
 
     func makeCoordinator() -> SignInWebViewCoordinator {
-        SignInWebViewCoordinator(remoteURL: url, onTokenFound: onTokenFound)
+        SignInWebViewCoordinator(remoteURL: url, onSignInComplete: onSignInComplete)
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -69,30 +69,30 @@ struct SignInWebView: UIViewRepresentable {
 
 class SignInWebViewCoordinator: NSObject, WKNavigationDelegate {
     let remoteURL: URL
-    var onTokenFound: ((String) -> Void)?
-    private var hasReportedToken = false
+    var onSignInComplete: ((_ accessCookie: String?, _ refreshCookie: String?) -> Void)?
+    private var hasCompleted = false
 
-    init(remoteURL: URL, onTokenFound: ((String) -> Void)?) {
+    init(remoteURL: URL, onSignInComplete: ((_ accessCookie: String?, _ refreshCookie: String?) -> Void)?) {
         self.remoteURL = remoteURL
-        self.onTokenFound = onTokenFound
+        self.onSignInComplete = onSignInComplete
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        guard !hasReportedToken else { return }
+        guard !hasCompleted else { return }
         guard webView.url?.path != remoteURL.path else { return }
 
         Task { @MainActor in
-            guard !hasReportedToken else { return }
+            guard !hasCompleted else { return }
 
             let cookies = await webView.configuration.websiteDataStore.httpCookieStore.allCookies()
 
             let rememberMe = cookies.first { $0.name.hasSuffix("_remember_me") }
             let key = cookies.first { $0.name.hasSuffix("_key") }
 
-            if let match = rememberMe ?? key {
-                DebugLogger.info("Sign-in token found in cookie \"\(match.name)\"")
-                hasReportedToken = true
-                onTokenFound?(match.value ?? "")
+            if rememberMe != nil || key != nil {
+                DebugLogger.info("Sign-in cookies found: access=\(key != nil), refresh=\(rememberMe != nil)")
+                hasCompleted = true
+                onSignInComplete?(key?.value, rememberMe?.value)
             }
         }
     }
@@ -114,10 +114,13 @@ struct SignInView: View {
     }
 
     var body: some View {
-        SignInWebView(url: remoteURL) { token in
-            DebugLogger.info("Sign-in completed, token length: \(token.count)")
-            DebugLogger.info("Sign-in completed, token: \(token)")
-            // TODO: Store token and navigate to authenticated area
+        SignInWebView(url: remoteURL) { accessCookie, refreshCookie in
+            if let accessCookie {
+                PyreWebAuth.upsert(type: .accessCookie, value: accessCookie)
+            }
+            if let refreshCookie {
+                PyreWebAuth.upsert(type: .refreshCookie, value: refreshCookie)
+            }
             router.navigate(to: RouterHelpers.getHomePath())
         }
         .withPageReloadable(viewModel: viewModel)
