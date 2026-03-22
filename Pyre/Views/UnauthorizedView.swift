@@ -23,7 +23,7 @@ struct UnauthorizedView: View {
                 }
                 
                 Button("Go to Log In") {
-                    let redirectPath = RouterHelpers.getHomePath()
+                    let redirectPath = RouterHelpers.getSignInPath()
                     router.navigate(to: redirectPath)
                 }
                 .buttonStyle(.borderedProminent)

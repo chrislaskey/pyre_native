@@ -6,6 +6,10 @@ class RouterHelpers {
         return "/"
     }
 
+    static func getSignInPath() -> String {
+        return "/sign-in"
+    }
+
     /// Get route path
     ///
     /// Checks with RouteRegistry
