@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct PyreApp: App {
     @StateObject private var router = URLRouter()
+    @State private var showRouterOverlay = false
 
     init() {
         #if os(macOS)
@@ -23,6 +24,9 @@ struct PyreApp: App {
                 .onOpenURL { url in
                     RouterHelpers.handleUniversalLink(url, router: router)
                 }
+                .sheet(isPresented: $showRouterOverlay) {
+                    RouterOverlay(router: router)
+                }
         }
         #if os(macOS)
         .windowStyle(.hiddenTitleBar)
@@ -33,6 +37,12 @@ struct PyreApp: App {
                     router.reconnect()
                 }
                 .keyboardShortcut("r", modifiers: .command)
+            }
+            CommandGroup(after: .textEditing) {
+                Button("Go to Route…") {
+                    showRouterOverlay.toggle()
+                }
+                .keyboardShortcut("l", modifiers: .command)
             }
         }
     }
