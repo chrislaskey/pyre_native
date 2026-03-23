@@ -21,6 +21,9 @@ struct PyreApp: App {
         WindowGroup {
             RouterView()
                 .environmentObject(router)
+                #if os(macOS)
+                .fullBleedWindow()
+                #endif
                 .onOpenURL { url in
                     RouterHelpers.handleUniversalLink(url, router: router)
                 }
