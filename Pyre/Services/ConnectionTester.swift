@@ -149,8 +149,9 @@ class ConnectionTester: ObservableObject {
         log("GET \(httpUrlString) (timeout: 5s)", level: .debug)
 
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            guard let self else { return }
             Task { @MainActor in
-                guard let self = self, self.isTesting else { return }
+                guard self.isTesting else { return }
 
                 if let error = error {
                     let nsError = error as NSError

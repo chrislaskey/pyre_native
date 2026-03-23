@@ -15,6 +15,6 @@ struct AppRoutes: AppRoutesProtocol {
 
         // App routes
 
-        Route("/", requireCurrentConnection: true, requireCurrentUser: true) { paramsFromRouter in HomeView(paramsFromRouter: paramsFromRouter) },
+        Route("/", requireCurrentConnection: true) { paramsFromRouter in HomeView(paramsFromRouter: paramsFromRouter) },
     ]
 }

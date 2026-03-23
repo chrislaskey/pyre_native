@@ -4,6 +4,9 @@ class ConnectionsService {
     private static let connectionsKey = "connections"
     private static let currentConnectionIdKey = "connections_current_id"
 
+    /// Posted when the current connection changes (set or cleared).
+    static let currentConnectionDidChange = Notification.Name("ConnectionsService.currentConnectionDidChange")
+
     // MARK: - All Connections
 
     static func list() -> [String: Connection] {
@@ -43,13 +46,15 @@ class ConnectionsService {
     }
 
     static func delete(id: String) {
+        let wasCurrent = getCurrentConnectionId() == id
+
         var connections = list()
         connections.removeValue(forKey: id)
         if let data = try? JSONEncoder().encode(connections) {
             UserDefaultsService.update(key: connectionsKey, value: data)
         }
 
-        if getCurrentConnectionId() == id {
+        if wasCurrent {
             if let next = connections.values.first {
                 updateCurrentConnectionId(next.id)
             } else {
@@ -72,10 +77,12 @@ class ConnectionsService {
         if let data = id.data(using: .utf8) {
             UserDefaultsService.update(key: currentConnectionIdKey, value: data)
         }
+        NotificationCenter.default.post(name: currentConnectionDidChange, object: nil)
     }
 
     static func deleteCurrentConnectionId() {
         UserDefaultsService.delete(key: currentConnectionIdKey)
+        NotificationCenter.default.post(name: currentConnectionDidChange, object: nil)
     }
 
     static func getCurrentConnection() -> Connection? {

@@ -121,7 +121,7 @@ struct ConnectionTestPanel: View {
                 }
             }
             .frame(maxHeight: 350)
-            .onChange(of: tester.logEntries.count) { _ in
+            .onChange(of: tester.logEntries.count) {
                 if let last = tester.logEntries.last {
                     withAnimation(.easeOut(duration: 0.15)) {
                         proxy.scrollTo(last.id, anchor: .bottom)

@@ -32,3 +32,17 @@ to the Pyre mount point — for example:
 The app automatically converts this to a WebSocket URL
 (`ws://localhost:4000/pyre/websocket` or `wss://myapp.example.com/pyre/websocket`)
 and connects using Phoenix channels.
+
+### Connection Presence
+
+The app maintains a persistent WebSocket connection to report its presence to
+the server. On connect, it sends system information (computer name, CPU,
+memory, OS version) so the PyreWeb homepage can display which native app
+instances are currently online.
+
+- The connection is tied to the active connection — switching connections in
+  the app automatically leaves the old presence and joins the new one.
+- Reconnection is handled automatically by the underlying Phoenix socket
+  layer (exponential backoff from 1s to 30s).
+- Connected apps are visible on the PyreWeb homepage in the "Connected Apps"
+  panel.

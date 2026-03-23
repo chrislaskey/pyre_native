@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct PyreApp: App {
     @StateObject private var router = URLRouter()
+    @StateObject private var connectionPresence = ConnectionPresenceService()
     @State private var showRouterOverlay = false
 
     init() {
@@ -13,6 +14,9 @@ struct PyreApp: App {
             queue: .main
         ) { _ in
             ProcessTracker.shared.killAll()
+            MainActor.assumeIsolated {
+                PhoenixChannelService.shared.disconnectAll()
+            }
         }
         #endif
     }
@@ -21,6 +25,7 @@ struct PyreApp: App {
         WindowGroup {
             RouterView()
                 .environmentObject(router)
+                .environmentObject(connectionPresence)
                 #if os(macOS)
                 .fullBleedWindow()
                 #endif
