@@ -26,6 +26,13 @@ class SignOutViewModel: ObservableObject, PageViewModel {
     }
 
     func signOut() {
+        guard let connection = ConnectionsService.getCurrentConnection() else {
+            router?.navigate(to: "/connections")
+            return
+        }
+
+        DebugLogger.info("Signing out from connection: \(connection.name) (\(connection.baseUrl))")
+
         PyreWebAuth.delete(type: .accessCookie)
         PyreWebAuth.delete(type: .refreshCookie)
 
@@ -33,7 +40,7 @@ class SignOutViewModel: ObservableObject, PageViewModel {
             await PyreWebAuth.clearWebViewCookies()
 
             await MainActor.run {
-                self.router!.navigate(to: RouterHelpers.getSignInPath())
+                self.router?.navigate(to: RouterHelpers.getSignInPath())
             }
         }
     }

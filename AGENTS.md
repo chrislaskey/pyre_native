@@ -1,0 +1,5 @@
+- When creating Pages, ONLY add display logic in the View. Most core logic should be in the ViewModel.
+- Use `list`, `get`, `getBy`, `create`, `update`, and `delete` function names when doing CRUD actions. Always create these simple functions, and if more complex use-case specific functions are needed have it call these simple functions.
+- When naming functions:
+    - Prefer `create` or `update` over `save`, `set`, or other names
+    - Prefer `delete` over `clear`, `reset`, or other names

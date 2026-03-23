@@ -2,15 +2,18 @@ import SwiftUI
 
 struct Route {
     let pattern: RoutePattern
+    let requireCurrentConnection: Bool
     let requireCurrentUser: Bool
     let viewBuilder: (ParamsFromRouter) -> AnyView
-    
+
     init(
         _ pattern: String,
+        requireCurrentConnection: Bool = false,
         requireCurrentUser: Bool = false,
         @ViewBuilder view: @escaping (ParamsFromRouter) -> some View
     ) {
         self.pattern = RoutePattern(pattern)
+        self.requireCurrentConnection = requireCurrentConnection
         self.requireCurrentUser = requireCurrentUser
         self.viewBuilder = { paramsFromRouter in AnyView(view(paramsFromRouter)) }
     }

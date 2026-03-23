@@ -9,17 +9,21 @@ class SignInViewModel: ObservableObject, PageViewModel {
     private(set) var router: URLRouter?
     private(set) var paramsFromRouter: ParamsFromRouter?
 
+    @Published var remoteURL: URL?
+
     init() {}
-    
+
     func mount(_ paramsFromRouter: ParamsFromRouter, _ router: URLRouter) {
         self.router = router
         self.paramsFromRouter = paramsFromRouter
 
         handleParams()
     }
-    
-    func handleParams(_ payload: [String: Any] = [:]) {
 
+    func handleParams(_ payload: [String: Any] = [:]) {
+        guard let connection = ConnectionsService.getCurrentConnection() else { return }
+        // remoteURL = URL(string: "\(connection.baseUrl)/users/log-in")
+        remoteURL = URL(string: "\(connection.baseUrl)")
     }
 
     func reload() {
@@ -107,21 +111,25 @@ struct SignInView: View {
     @State private var paramsFromRouter: ParamsFromRouter
     @State private var handledFirstOnAppear = false
 
-    private let remoteURL = URL(string: "http://localhost:4000/users/log-in")!
-
     init(paramsFromRouter: ParamsFromRouter) {
         self.paramsFromRouter = paramsFromRouter
     }
 
     var body: some View {
-        SignInWebView(url: remoteURL) { accessCookie, refreshCookie in
-            if let accessCookie {
-                PyreWebAuth.upsert(type: .accessCookie, value: accessCookie)
+        Group {
+            if let remoteURL = viewModel.remoteURL {
+                SignInWebView(url: remoteURL) { accessCookie, refreshCookie in
+                    if let accessCookie {
+                        PyreWebAuth.upsert(type: .accessCookie, value: accessCookie)
+                    }
+                    if let refreshCookie {
+                        PyreWebAuth.upsert(type: .refreshCookie, value: refreshCookie)
+                    }
+                    router.navigate(to: RouterHelpers.getHomePath())
+                }
+            } else {
+                Color.clear
             }
-            if let refreshCookie {
-                PyreWebAuth.upsert(type: .refreshCookie, value: refreshCookie)
-            }
-            router.navigate(to: RouterHelpers.getHomePath())
         }
         .withPageReloadable(viewModel: viewModel)
         .onAppear {

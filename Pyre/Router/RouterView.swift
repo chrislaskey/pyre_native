@@ -25,9 +25,12 @@ struct RouterView: View {
         if let match = match(url: url) {
             let route = match.route
             let hasCurrentUser = false
+            let hasCurrentConnection = ConnectionsService.getCurrentConnectionId() != nil
 
             if route.requireCurrentUser && !hasCurrentUser {
                 UnauthorizedView()
+            } else if route.requireCurrentConnection && !hasCurrentConnection {
+                RedirectView(to: "/connections", router: router)
             } else {
                 route.viewBuilder(match.paramsFromRouter)
             }
@@ -60,5 +63,6 @@ struct RouterView: View {
 
         print("📍 Route: \(match.paramsFromRouter.path)")
         print("🔒 Current user required: \(match.route.requireCurrentUser)")
+        print("🔗 Current connection required: \(match.route.requireCurrentConnection)")
     }
 }
