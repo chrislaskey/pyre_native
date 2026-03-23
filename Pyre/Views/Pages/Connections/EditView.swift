@@ -14,6 +14,8 @@ class ConnectionsEditViewModel: ObservableObject, PageViewModel {
     @Published var isSubmitting: Bool = false
     @Published var notFound: Bool = false
 
+    let tester = ConnectionTester()
+
     var isValid: Bool {
         !name.trimmingCharacters(in: .whitespaces).isEmpty &&
         !baseUrl.trimmingCharacters(in: .whitespaces).isEmpty
@@ -58,6 +60,10 @@ class ConnectionsEditViewModel: ObservableObject, PageViewModel {
         isSubmitting = false
         router?.navigate(to: "/connections")
     }
+
+    func testConnection() {
+        tester.test(baseUrl: baseUrl)
+    }
 }
 
 // MARK: - ConnectionsEditView
@@ -87,7 +93,7 @@ struct ConnectionsEditView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.top, 80)
             } else {
-                VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 12) {
                     Text("Edit Connection")
                         .font(.largeTitle)
                         .fontWeight(.bold)
@@ -125,6 +131,12 @@ struct ConnectionsEditView: View {
                     ) {
                         viewModel.submit()
                     }
+
+                    ConnectionTestSection(
+                        tester: viewModel.tester,
+                        hasUrl: !viewModel.baseUrl.trimmingCharacters(in: .whitespaces).isEmpty,
+                        onTest: { viewModel.testConnection() }
+                    )
                 }
                 .padding()
             }

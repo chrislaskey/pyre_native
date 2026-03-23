@@ -14,8 +14,7 @@ struct ConnectionTestSection: View {
             ActionButton(
                 title: tester.isTesting ? "Testing..." : "Test Connection",
                 icon: "antenna.radiowaves.left.and.right",
-                type: .secondary,
-                backgroundColor: .orange,
+                type: .tertiary,
                 isLoading: tester.isTesting,
                 isDisabled: !hasUrl || tester.isTesting
             ) {
