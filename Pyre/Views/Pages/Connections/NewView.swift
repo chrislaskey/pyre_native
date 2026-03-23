@@ -88,10 +88,10 @@ struct ConnectionsNewView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Base URL")
+                        Text("Pyre Web URL")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
-                        TextField("https://example.com", text: $viewModel.baseUrl)
+                        TextField("https://example.com/pyre", text: $viewModel.baseUrl)
                             .textFieldStyle(.roundedBorder)
                             #if os(iOS)
                             .autocapitalization(.none)
