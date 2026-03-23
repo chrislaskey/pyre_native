@@ -24,6 +24,19 @@ class SignOutViewModel: ObservableObject, PageViewModel {
     func reload() {
         handleParams()
     }
+
+    func signOut() {
+        PyreWebAuth.delete(type: .accessCookie)
+        PyreWebAuth.delete(type: .refreshCookie)
+
+        Task {
+            await PyreWebAuth.clearWebViewCookies()
+
+            await MainActor.run {
+                self.router!.navigate(to: RouterHelpers.getSignInPath())
+            }
+        }
+    }
 }
 
 // MARK: - SignOutView
@@ -45,26 +58,13 @@ struct SignOutView: View {
             .onAppear {
                 if !handledFirstOnAppear {
                     viewModel.mount(paramsFromRouter, router)
+                    viewModel.signOut()
                     handledFirstOnAppear = true
-                    performSignOut()
                 }
             }
             .onDisappear {
                 handledFirstOnAppear = false
             }
-    }
-
-    private func performSignOut() {
-        PyreWebAuth.delete(type: .accessCookie)
-        PyreWebAuth.delete(type: .refreshCookie)
-
-        Task {
-            await PyreWebAuth.clearWebViewCookies()
-
-            await MainActor.run {
-                router.navigate(to: RouterHelpers.getSignInPath())
-            }
-        }
     }
 }
 
