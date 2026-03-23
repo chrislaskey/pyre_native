@@ -13,6 +13,8 @@ class ConnectionsNewViewModel: ObservableObject, PageViewModel {
     @Published var isSubmitting: Bool = false
     @Published var toast: ToastData?
 
+    let tester = ConnectionTester()
+
     var isValid: Bool {
         !name.trimmingCharacters(in: .whitespaces).isEmpty &&
         !baseUrl.trimmingCharacters(in: .whitespaces).isEmpty
@@ -54,6 +56,10 @@ class ConnectionsNewViewModel: ObservableObject, PageViewModel {
 
         ConnectionsService.updateCurrentConnectionId(connection.id)
         router?.navigate(to: RouterHelpers.getHomePath())
+    }
+
+    func testConnection() {
+        tester.test(baseUrl: baseUrl)
     }
 }
 
@@ -100,6 +106,12 @@ struct ConnectionsNewView: View {
                             .onSubmit { if viewModel.isValid { viewModel.submit() } }
                     }
                 }
+
+                ConnectionTestSection(
+                    tester: viewModel.tester,
+                    hasUrl: !viewModel.baseUrl.trimmingCharacters(in: .whitespaces).isEmpty,
+                    onTest: { viewModel.testConnection() }
+                )
 
                 ActionButton(
                     title: "Create Connection",
