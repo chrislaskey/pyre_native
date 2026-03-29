@@ -91,7 +91,7 @@ enum ShellExecutor {
     nonisolated static func run(_ command: String) async throws -> CommandResult {
         let result = try await Subprocess.run(
             .path(userShell),
-            arguments: ["-ilc", command],
+            arguments: ["-lc", command],
             platformOptions: spawnOptions,
             output: .string(limit: 1_048_576),
             error: .string(limit: 1_048_576)
@@ -113,7 +113,7 @@ enum ShellExecutor {
     ) async throws -> TerminationStatus {
         let executionResult = try await Subprocess.run(
             .path(userShell),
-            arguments: ["-ilc", command],
+            arguments: ["-lc", command],
             platformOptions: spawnOptions,
             error: .combineWithOutput,
             preferredBufferSize: 1
@@ -144,7 +144,8 @@ enum ShellExecutor {
 
     private nonisolated static func isShellNoise(_ line: String) -> Bool {
         line.contains("cannot set terminal process group") ||
-        line.contains("no job control in this shell")
+        line.contains("no job control in this shell") ||
+        line.contains("can't change option: zle")
     }
 
     private nonisolated static func filterShellNoise(_ stderr: String) -> String {

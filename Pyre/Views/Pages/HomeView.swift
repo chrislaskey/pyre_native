@@ -45,6 +45,7 @@ struct HomeView: View {
     @State private var hasRun = false
     #if os(macOS)
     @State private var currentExecution: Execution?
+    @ObservedObject private var remoteCommands = RemoteCommandService.shared
     #endif
 
     init(paramsFromRouter: ParamsFromRouter) {
@@ -105,6 +106,32 @@ struct HomeView: View {
                     }
                     .frame(maxWidth: 480)
                 }
+                if let execution = remoteCommands.currentExecution {
+                    GroupBox {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("Remote: \(execution.id)")
+                                    .font(.headline)
+                                Spacer()
+                                remoteStatusBadge(execution.status)
+                            }
+
+                            ScrollView {
+                                Text(execution.output)
+                                    .font(.system(.body, design: .monospaced))
+                                    .textSelection(.enabled)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .frame(maxHeight: 300)
+
+                            if remoteCommands.isRunning {
+                                Button("Stop") { remoteCommands.stop() }
+                                    .buttonStyle(.bordered)
+                            }
+                        }
+                    }
+                    .frame(maxWidth: 480)
+                }
                 #else
                 Text("Shell execution is only available on macOS")
                     .foregroundStyle(.secondary)
@@ -125,6 +152,44 @@ struct HomeView: View {
     }
 
     #if os(macOS)
+    @ViewBuilder
+    private func remoteStatusBadge(_ status: RemoteCommandService.RemoteExecution.Status) -> some View {
+        switch status {
+        case .running:
+            Text("Running")
+                .font(.caption)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(.blue.opacity(0.2))
+                .foregroundStyle(.blue)
+                .clipShape(Capsule())
+        case .complete:
+            Text("Complete")
+                .font(.caption)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(.green.opacity(0.2))
+                .foregroundStyle(.green)
+                .clipShape(Capsule())
+        case .error:
+            Text("Error")
+                .font(.caption)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(.red.opacity(0.2))
+                .foregroundStyle(.red)
+                .clipShape(Capsule())
+        case .stopped:
+            Text("Stopped")
+                .font(.caption)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(.orange.opacity(0.2))
+                .foregroundStyle(.orange)
+                .clipShape(Capsule())
+        }
+    }
+
     private func runCommand() {
         let command = commandInput.trimmingCharacters(in: .whitespaces)
         guard !command.isEmpty else { return }

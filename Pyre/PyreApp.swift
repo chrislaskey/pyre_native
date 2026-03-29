@@ -4,6 +4,9 @@ import SwiftUI
 struct PyreApp: App {
     @StateObject private var router = URLRouter()
     @StateObject private var connectionPresence = ConnectionPresenceService()
+    #if os(macOS)
+    @StateObject private var remoteCommands = RemoteCommandService.shared
+    #endif
     @State private var showRouterOverlay = false
 
     init() {
@@ -27,6 +30,7 @@ struct PyreApp: App {
                 .environmentObject(router)
                 .environmentObject(connectionPresence)
                 #if os(macOS)
+                .environmentObject(remoteCommands)
                 .fullBleedWindow()
                 #endif
                 .onOpenURL { url in

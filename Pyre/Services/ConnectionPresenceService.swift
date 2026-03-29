@@ -55,6 +55,31 @@ final class ConnectionPresenceService: ObservableObject {
             .receive(on: DispatchQueue.main)
             .assign(to: &$isConnected)
 
+        // Handle actions dispatched from the server
+        newChannel.on("action") { [weak newChannel] payload in
+            guard let channel = newChannel,
+                  let executionId = payload["execution_id"] as? String,
+                  let type = payload["type"] as? String,
+                  let innerPayload = payload["payload"] as? [String: Any]
+            else { return }
+
+            switch type {
+            case "execute_commands":
+                guard let commands = innerPayload["commands"] as? [String] else { return }
+                #if os(macOS)
+                RemoteCommandService.shared.execute(
+                    commands: commands,
+                    executionId: executionId,
+                    channel: channel
+                )
+                #else
+                DebugLogger.warning("execute_commands not supported on this platform")
+                #endif
+            default:
+                DebugLogger.warning("Unknown action type: \(type)")
+            }
+        }
+
         channel = newChannel
         currentConnectionId = connection.id
     }
