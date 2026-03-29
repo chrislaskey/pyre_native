@@ -1,6 +1,6 @@
-# Pyre App
+# Pyre Native App
 
-Native Apple application for [pyre](https://github.com/chrislaskey/pyre) and [pyre_web](https://github.com/chrislaskey/pyre_web).
+Native macOS and iOS Apple app for [pyre](https://github.com/chrislaskey/pyre) and [pyre_web](https://github.com/chrislaskey/pyre_web).
 
 ## Connecting to a Pyre server
 
