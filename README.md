@@ -1,6 +1,37 @@
 # Pyre Native App
 
+> For a fully configured standlone application see [Pyre App](https://github.com/chrislaskey/pyre_app)
+
 Native macOS and iOS Apple app for [pyre](https://github.com/chrislaskey/pyre) and [pyre_web](https://github.com/chrislaskey/pyre_web).
+
+## Configuration
+
+PyreWeb serves its own JavaScript to connect to your app's LiveView socket.
+Your endpoint must have the standard LiveView socket configured:
+
+```elixir
+# lib/my_app_web/endpoint.ex
+socket "/live", Phoenix.LiveView.Socket
+```
+
+This is included by default in Phoenix applications generated with
+`mix phx.new`.
+
+To enable the Pyre native app to connect over Phoenix channels, add the
+`PyreWeb.Socket` to your endpoint. The path must match the route prefix you
+use when mounting PyreWeb in the router (e.g., `/pyre` or `/`):
+
+```elixir
+# lib/my_app_web/router.ex
+scope "/" do
+  pipe_through :browser
+  pyre_web "/pyre"
+end
+
+# lib/my_app_web/endpoint.ex
+socket "/pyre", PyreWeb.Socket,
+  websocket: [connect_info: [:peer_data, :x_headers]]
+```
 
 ## Connecting to a Pyre server
 
