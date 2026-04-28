@@ -43,6 +43,12 @@ final class ConnectionPresenceService: ObservableObject {
         var params = info.toDictionary()
         params["connection_id"] = info.connectionId
 
+        // Worker capability fields — align with pyre_client's PyreClient.Config
+        params["status"] = "active"
+        params["available_capacity"] = NativeRunner.shared.availableCapacity
+        params["backends"] = NativeRunner.shared.supportedBackends
+        params["enabled_workflows"] = [String]()  // empty = all
+
         let newChannel = PhoenixChannelService.shared.connect(
             to: "pyre:connections",
             connection: connection,
@@ -59,25 +65,28 @@ final class ConnectionPresenceService: ObservableObject {
         newChannel.on("action") { [weak newChannel] payload in
             guard let channel = newChannel,
                   let executionId = payload["execution_id"] as? String,
-                  let type = payload["type"] as? String,
+                  let actionType = payload["action"] as? String,
                   let innerPayload = payload["payload"] as? [String: Any]
             else { return }
 
-            switch type {
-            case "execute_commands":
-                guard let commands = innerPayload["commands"] as? [String] else { return }
-                #if os(macOS)
-                RemoteCommandService.shared.execute(
-                    commands: commands,
-                    executionId: executionId,
-                    channel: channel
-                )
-                #else
-                DebugLogger.warning("execute_commands not supported on this platform")
-                #endif
-            default:
-                DebugLogger.warning("Unknown action type: \(type)")
-            }
+            NativeRunner.shared.dispatch(
+                executionId: executionId,
+                actionType: actionType,
+                payload: innerPayload,
+                channel: channel
+            )
+        }
+
+        // Interactive loop: server sends continuation message
+        newChannel.on("action_continue") { payload in
+            guard let executionId = payload["execution_id"] as? String else { return }
+            NativeRunner.shared.handleContinue(executionId: executionId, payload: payload)
+        }
+
+        // Interactive loop: server signals execution is finished
+        newChannel.on("action_finish") { payload in
+            guard let executionId = payload["execution_id"] as? String else { return }
+            NativeRunner.shared.handleFinish(executionId: executionId)
         }
 
         channel = newChannel

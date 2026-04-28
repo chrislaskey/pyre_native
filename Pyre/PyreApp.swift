@@ -5,7 +5,7 @@ struct PyreApp: App {
     @StateObject private var router = URLRouter()
     @StateObject private var connectionPresence = ConnectionPresenceService()
     #if os(macOS)
-    @StateObject private var remoteCommands = RemoteCommandService.shared
+    @StateObject private var runner = NativeRunner.shared
     #endif
     @State private var showRouterOverlay = false
 
@@ -30,7 +30,7 @@ struct PyreApp: App {
                 .environmentObject(router)
                 .environmentObject(connectionPresence)
                 #if os(macOS)
-                .environmentObject(remoteCommands)
+                .environmentObject(runner)
                 .fullBleedWindow()
                 #endif
                 .onOpenURL { url in

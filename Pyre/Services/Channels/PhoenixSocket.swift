@@ -277,9 +277,9 @@ class PhoenixSocket: ObservableObject {
     /// Build WebSocket URL from base URL and channel path.
     ///
     /// - Parameters:
-    ///   - baseURL: The organization's base URL (e.g., "http://localhost:4000/pyre")
+    ///   - baseURL: The organization's base URL (e.g., "http://localhost:4000")
     ///   - channelPath: The channel path (e.g., "/users/log-in")
-    /// - Returns: Full WebSocket URL (e.g., "ws://localhost:4000/pyre/websocket")
+    /// - Returns: Full WebSocket URL (e.g., "ws://localhost:4000/websocket")
     static func buildWebSocketURL(connection: Connection, channelPath: String) -> String {
         let baseUrl = connection.baseUrl
 

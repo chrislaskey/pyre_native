@@ -57,12 +57,17 @@ socket "/pyre", PyreWeb.Socket,
 When adding a connection in the app, the **Base URL** should be the full URL
 to the Pyre mount point — for example:
 
-- Local development: `http://localhost:4000/pyre`
-- Production: `https://myapp.example.com/pyre`
+- Local development: `http://localhost:4000`
+- Production: `https://myapp.example.com`
 
 The app automatically converts this to a WebSocket URL
-(`ws://localhost:4000/pyre/websocket` or `wss://myapp.example.com/pyre/websocket`)
+(`ws://localhost:4000/websocket` or `wss://myapp.example.com/websocket`)
 and connects using Phoenix channels.
+
+The base URL must match the socket mount path in the host app's endpoint.
+If the endpoint mounts `PyreWeb.Socket` at a subpath — e.g.,
+`socket "/pyre", PyreWeb.Socket` — use `http://localhost:4000/pyre` as the
+base URL.
 
 ### Connection Presence
 
