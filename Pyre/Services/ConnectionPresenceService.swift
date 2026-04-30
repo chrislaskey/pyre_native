@@ -45,6 +45,7 @@ final class ConnectionPresenceService: ObservableObject {
 
         // Worker capability fields — align with pyre_client's PyreClient.Config
         params["status"] = "active"
+        params["max_capacity"] = NativeRunner.shared.maxCapacity
         params["available_capacity"] = NativeRunner.shared.availableCapacity
         params["backends"] = NativeRunner.shared.supportedBackends
         params["enabled_workflows"] = [String]()  // empty = all

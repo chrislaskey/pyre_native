@@ -20,10 +20,12 @@ final class NativeRunner: ObservableObject {
     @Published private(set) var activeExecution: ActiveExecution?
     @Published private(set) var isRunning = false
 
-    private let maxCapacity = 1
+    let maxCapacity = 1
+    /// Tracks reserved workflow slots by execution ID. The capacity gate.
+    private(set) var workflowSlots: Set<String> = []
 
     var availableCapacity: Int {
-        isRunning ? 0 : maxCapacity
+        maxCapacity - workflowSlots.count
     }
 
     var supportedBackends: [String] {
@@ -44,18 +46,35 @@ final class NativeRunner: ObservableObject {
         payload: [String: Any],
         channel: PhoenixChannelLiveView
     ) {
-        guard !isRunning else {
-            DebugLogger.warning("NativeRunner at capacity, rejecting \(executionId)")
-            channel.pushAsync("action_complete", [
-                "execution_id": executionId,
-                "status": "error",
-                "result": ["error": "Worker at capacity"]
-            ])
-            return
+        // Reserve actions: check workflow slot capacity
+        if actionType == "reserve" {
+            guard workflowSlots.count < maxCapacity else {
+                DebugLogger.warning("NativeRunner no workflow slots, rejecting reserve \(executionId)")
+                channel.pushAsync("action_output", [
+                    "execution_id": executionId,
+                    "type": "ack",
+                    "status": "rejected"
+                ])
+                return
+            }
+            workflowSlots.insert(executionId)
+        } else {
+            // Non-reserve actions: check safety cap
+            guard !isRunning else {
+                DebugLogger.warning("NativeRunner at capacity, rejecting \(executionId)")
+                channel.pushAsync("action_complete", [
+                    "execution_id": executionId,
+                    "status": "error",
+                    "result": ["error": "Worker at capacity"]
+                ])
+                return
+            }
         }
 
         guard let handler = resolveHandler(actionType) else {
             DebugLogger.warning("Unsupported action type: \(actionType)")
+            // If we just added a workflow slot for a reserve, remove it
+            workflowSlots.remove(executionId)
             channel.pushAsync("action_complete", [
                 "execution_id": executionId,
                 "status": "error",
@@ -109,6 +128,7 @@ final class NativeRunner: ObservableObject {
         guard activeExecution?.id == executionId else { return }
         activeExecution = nil
         isRunning = false
+        workflowSlots.remove(executionId)
         updateCapacity(channel: channel)
     }
 
@@ -134,6 +154,7 @@ final class NativeRunner: ObservableObject {
 
     private func updateCapacity(channel: PhoenixChannelLiveView) {
         channel.pushAsync("update_metadata", [
+            "max_capacity": maxCapacity,
             "available_capacity": availableCapacity
         ])
     }
